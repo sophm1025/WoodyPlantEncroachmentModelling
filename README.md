@@ -206,14 +206,10 @@ Cross-Validation / Cross-Site Testing
 Metrics + Predictions + Visualizations
 ```
 
-## Important Notes
+-## Repository Notes
 
-- The cleaned repository preserves the original notebooks rather than rewriting them into a new software package, because the notebooks contain the project-specific experimental logic and results.
-- Duplicate copies of the same dataset were consolidated into `data/datasets/`; the original repository contained the same Git LFS pointer files in several notebook folders.
-- One exact duplicate of `XGB_LGB_roc.ipynb` was removed from the cleaned tree because the same notebook exists elsewhere in the original repository.
-- `All Models-Copy1.ipynb` is preserved under `archive/experimental_or_duplicate/` rather than discarded, since it is an alternate notebook rather than an exact byte-for-byte duplicate.
-- The original `catboost_info/` directory and Jupyter checkpoint directories are generated artifacts and are not part of the analytical source material.
-
-## Scope
-
-This repository is best understood as a **research analysis and model-comparison project** rather than a production ML package. It documents a substantial set of experiments for predicting woody-plant encroachment across NEON sites and years, with particular emphasis on comparing classical, tree-based, and boosting classifiers and testing model transfer between datasets.
+- The project uses Jupyter notebooks to preserve the experimental workflow, model development, analysis, and results in an interactive format.
+- Datasets are organized under `data/datasets/`, while generated prediction outputs are stored separately under `data/predictions/`.
+- The `archive/experimental_or_duplicate/` directory contains alternate or experimental notebooks that are retained for reference but are not part of the primary workflow.
+- Generated artifacts such as `catboost_info/`, Jupyter checkpoint directories, and temporary files are excluded through `.gitignore`.
+- Model notebooks are organized by model family, while validation experiments are separated to make cross-validation and cross-site evaluation easier to navigate.
