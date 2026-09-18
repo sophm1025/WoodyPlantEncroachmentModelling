@@ -206,7 +206,7 @@ Cross-Validation / Cross-Site Testing
 Metrics + Predictions + Visualizations
 ```
 
--## Repository Notes
+## Repository Notes
 
 - The project uses Jupyter notebooks to preserve the experimental workflow, model development, analysis, and results in an interactive format.
 - Datasets are organized under `data/datasets/`, while generated prediction outputs are stored separately under `data/predictions/`.
