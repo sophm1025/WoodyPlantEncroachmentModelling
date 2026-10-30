@@ -213,3 +213,8 @@ Metrics + Predictions + Visualizations
 - The `archive/experimental_or_duplicate/` directory contains alternate or experimental notebooks that are retained for reference but are not part of the primary workflow.
 - Generated artifacts such as `catboost_info/`, Jupyter checkpoint directories, and temporary files are excluded through `.gitignore`.
 - Model notebooks are organized by model family, while validation experiments are separated to make cross-validation and cross-site evaluation easier to navigate.
+
+## Contributors
+- Sophie Mao
+- Bhoomika Khatri
+- Hannah Wang
