@@ -1,218 +1,155 @@
-# EarthScienceSVSM
+# Woody Plant Encroachment Modeling
 
-Machine-learning analyses for predicting **woody-plant encroachment** using ecological and remote-sensing measurements from the **Santa Rita Experimental Range (SRER)** and **Jornada Experimental Range (JORN)** NEON sites. The original repository was developed by the UNCW-SVSM 2022 Earth Science Group.
+This project explores the use of remote-sensing and ecological data to classify woody versus non-woody vegetation and investigate woody plant encroachment across different geographic locations and years.
 
-## Overview
+The analysis uses data from two study sites—the **Jornada Experimental Range (JORN)** and **Santa Rita Experimental Range (SRER)**—with observations from **2017 and 2021**. A major focus of the project was not only determining whether vegetation could be classified from remotely sensed features, but also exploring whether relationships learned at one site or time period generalized to another.
 
-This repository contains exploratory data analysis, feature-selection work, supervised classification experiments, cross-site/cross-year validation, model comparison, and prediction outputs. The notebooks compare multiple machine-learning approaches for distinguishing **woody** and **non-woody** vegetation classes and investigate how model performance transfers between sites and years.
+## Project Goals
 
-The analysis includes both general model comparisons and targeted experiments in which data from one site/year are used for training and another site/year is used for testing. Several notebooks also incorporate **fractional woody cover (FWC)** analyses.
+The project addressed three main questions:
 
-## Repository Structure
+1. Can remotely sensed vegetation measurements distinguish woody from non-woody vegetation?
+2. How do different classification algorithms perform on this task?
+3. Do models trained at one geographic site or year generalize to observations from another site or year?
 
-```text
-EarthScienceSVSM/
-├── README.md
-├── LICENSE
-├── .gitattributes
-├── .gitignore
-├── requirements.txt
-│
-├── data/
-│   ├── README.md
-│   ├── datasets/
-│   │   ├── JORN17_dataset_v1.csv
-│   │   ├── JORN17_dataset_v2.csv
-│   │   ├── JORN21_dataset_v1.csv
-│   │   ├── SRER21_dataset_v1.csv
-│   │   ├── SRER_2017_training_bi.csv
-│   │   └── precip1922-2022.csv
-│   └── predictions/
-│       ├── SRER17_pred.csv
-│       └── SRER21_pred.csv
-│
-├── notebooks/
-│   ├── eda/
-│   ├── models/
-│   │   ├── core/
-│   │   ├── boosting/
-│   │   └── tree_based/
-│   └── validation/
-│       ├── JORN_as_validation/
-│       ├── SRER_as_validation/
-│       └── cross_site_transfer/
-│
-├── analysis/
-│   └── feature_selection/
-│
-├── results/
-│   ├── README.md
-│   └── figures/
-│
-└── archive/
-    └── experimental_or_duplicate/
-```
+The final analyses also examined whether vegetation classifications could be translated into an ecologically meaningful measure of **fractional woody cover (FWC)**.
 
-Generated notebooks checkpoints, macOS metadata, CatBoost training logs, and other automatically generated artifacts are intentionally excluded from the cleaned repository.
+## Data and Features
 
-## Data
+Observations contain a binary vegetation classification (`woody` or `non-woody`) along with remotely sensed predictors including:
 
-The primary datasets represent SRER and JORN observations from **2017 and 2021**. Variables used throughout the notebooks include vegetation class and canopy-height/remote-sensing-derived measurements such as CH_mean, CH_max, CH_med, ARVI, EVI, NDVI, SAVI, and related summary statistics. The exact feature set varies by notebook.
+- **Canopy Height (CH)** — estimated vegetation height
+- **NDVI** — Normalized Difference Vegetation Index
+- **EVI** — Enhanced Vegetation Index
+- **SAVI** — Soil-Adjusted Vegetation Index
+- **ARVI** — Atmospherically Resistant Vegetation Index
 
-The repository uses **Git LFS for CSV files**. When cloning the repository, install Git LFS and retrieve the tracked data:
-
-```bash
-git lfs install
-git lfs pull
-```
-
-If a CSV is only a small file containing a `git-lfs.github.com/spec/v1` header, it is an LFS pointer rather than the full dataset.
+Several variables include summary statistics such as **mean, median, and maximum**. These capture different characteristics of the measurements within an observation. For example, the mean represents average conditions, the median provides a measure less sensitive to extremes, and the maximum captures the strongest observed vegetation signal.
 
 ## Exploratory Data Analysis
 
-The `notebooks/eda/` directory contains analyses of: 
+EDA was used to examine:
 
-- SRER 2017
-- SRER 2021
-- JORN 2017
-- JORN 2021
-- combined site/year datasets
-- 2017 versus 2021 comparisons
-- woody versus non-woody vegetation distributions
-- canopy-height distributions
-- correlation heatmaps
-- pairplots and boxplots
-- fractional woody cover
-- precipitation
+- Feature distributions
+- Missing observations
+- Correlations among vegetation indices
+- Class balance
+- Differences between woody and non-woody vegetation
+- Differences across sites and years
 
-These notebooks are used to inspect the distributions and relationships among candidate predictors before model training.
+The analysis showed substantial overlap between woody and non-woody observations rather than a simple threshold separating the classes. Several vegetation indices were also strongly correlated.
+
+These observations motivated evaluating multivariate classification algorithms capable of combining information across multiple predictors.
 
 ## Feature Selection
 
-The `analysis/feature_selection/` directory contains the original **Boruta** analysis materials and related variable-selection work. The feature-selection notebooks/scripts investigate which predictors are most informative for the woody/non-woody classification task.
+The project explored feature importance using **Boruta**, a Random-Forest-based feature-selection algorithm.
 
-## Machine-Learning Models
+Boruta creates randomized copies of the original predictors, known as *shadow features*, by independently shuffling their values. It then compares the importance of the real predictors with these randomized alternatives.
 
-The model notebooks compare a broad set of supervised classification methods, including:
+A feature that consistently provides more predictive information than the shadow features has evidence of containing useful information about vegetation class.
+
+## Model Comparison
+
+The project explored both classical/non-tree classifiers and tree-based ensemble methods.
+
+### Non-Tree Models
+
+The non-tree model comparison included:
 
 - Logistic Regression
-- K-Nearest Neighbors (KNN)
 - Linear Discriminant Analysis (LDA)
 - Quadratic Discriminant Analysis (QDA)
-- Support Vector Classification (SVC)
+- K-Nearest Neighbors (KNN)
+
+### Tree-Based Models
+
+Tree-based approaches included:
+
 - Decision Trees
 - Bagging
 - Random Forest
-- Gradient Boosting
 - AdaBoost
-- XGBoost
-- LightGBM
-- CatBoost
+- Gradient Boosting
+- Additional boosted-tree implementations explored during model development
 
-Several notebooks calculate accuracy, confusion matrices, classification reports, cross-validation scores, and ROC/AUC-related results. Tree-based and boosting analyses receive their own folders because they include multiple targeted experiments and model variants.
+Models were evaluated using **5-fold cross-validation** along with classification metrics including accuracy, sensitivity/recall, specificity, precision, F1 score, and confusion matrices.
 
-## Cross-Site and Cross-Year Validation
+Tree-based ensemble methods frequently performed strongly, motivating additional investigation of their behavior across different training and testing datasets.
 
-A major part of the repository evaluates how models trained on one dataset perform on a different site and/or year. The validation notebooks include experiments such as:
+## Cross-Site and Cross-Year Generalization
 
-```text
-2017 JORN  -> 2021 JORN
-2017 SRER  -> 2021 JORN
-2021 JORN  -> 2017 JORN
-2021 SRER  -> 2021 JORN
-2017 JORN  -> 2017 SRER
-2017 JORN  -> 2021 SRER
-2021 JORN  -> 2021 SRER
-2021 SRER  -> 2017 SRER
-```
+A major component of the project was exploring whether models generalized beyond observations drawn from the same dataset.
 
-The `JORN_as_validation/` and `SRER_as_validation/` folders preserve these experiment groups while making their purpose easier to navigate. Some experiments use cross-validation, while others perform direct train/test transfer across sites or years.
+Standard 5-fold cross-validation evaluates a model using held-out observations from the same underlying site/year. To provide a more challenging test of generalization, additional experiments deliberately used different datasets for training and testing.
+
+Experiments included scenarios such as:
+
+- Same site, different year
+- Different site, same year
+- Different site and different year
+
+For example, a classifier could be trained using **JORN 2017** observations and evaluated using **SRER 2021** observations.
+
+These experiments were exploratory rather than a forecasting exercise. Some combinations therefore included training on a later year and evaluating an earlier year. The purpose was to investigate patterns in the transferability of the learned relationship between remote-sensing features and vegetation class rather than to predict historical vegetation from future observations.
+
+## Geographic Transfer Case Study: JORN 2021 → SRER 2021
+
+A focused experiment trained the four non-tree classifiers on **2021 JORN** and evaluated them on **2021 SRER**.
+
+Keeping the year constant while changing geographic location provided a useful test of geographic transfer.
+
+Among these models, **QDA produced the strongest classification performance, with approximately 72% accuracy**. However, performance differed substantially across vegetation classes, demonstrating why accuracy alone was insufficient for evaluating the models.
+
+The experiment also illustrated the difference between internal cross-validation and external transfer performance. For example, KNN achieved substantially stronger performance during tuning within the JORN data than when subsequently applied to SRER, suggesting geographic distribution shift between the two sites.
 
 ## Fractional Woody Cover
 
-Fractional woody cover (FWC) is analyzed in dedicated exploratory and model-transfer notebooks. The repository includes comparisons where FWC is incorporated into prediction workflows as an additional variable or used for site/year comparison.
+The project also translated individual vegetation classifications into **Fractional Woody Cover (FWC)**.
 
-## Model Results
-
-The repository contains model-prediction CSVs and previously generated performance figures. The `results/figures/` directory contains the performance plots that were already part of the original repository.
-
-The notebooks remain the authoritative source for the detailed experimental setup, feature engineering, model parameters, and evaluation logic for each experiment because this project was developed primarily as a notebook-based research workflow.
-
-## Installation
-
-Create a Python environment and install the dependencies:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-On Windows, activate the environment with:
-
-```powershell
-.venv\Scripts\activate
-```
-
-Then launch Jupyter:
-
-```bash
-jupyter lab
-```
-
-Some notebooks also contain environment-specific commands or assumptions from the original development environment. Those may need to be adapted for a local machine.
-
-## Reproducing the Analysis
-
-Because the repository contains many experiments rather than a single linear training script, reproduction is organized by analysis family:
-
-1. Retrieve the LFS datasets.
-2. Start with the EDA notebooks for the relevant site/year.
-3. Review feature-selection results where applicable.
-4. Run the core model-comparison notebooks.
-5. Run the tree-based/boosting analyses.
-6. Run the relevant cross-site/cross-year validation notebook.
-7. Compare the resulting evaluation metrics and prediction outputs.
-
-Notebook filenames describe the intended experiment, including training year/site, testing year/site, cross-validation, and whether FWC is included.
-
-## Research Workflow
+Rather than simply calculating the percentage of observations classified as woody, FWC incorporates the physical area represented by each observation:
 
 ```text
-NEON / ecological datasets
-        |
-        v
-Exploratory Data Analysis
-        |
-        v
-Feature Selection
-        |
-        v
-Train Classification Models
-        |
-        +--> Linear / Discriminant Models
-        |
-        +--> SVM / KNN
-        |
-        +--> Tree-Based Models
-        |
-        +--> Boosting Models
-        |
-        v
-Cross-Validation / Cross-Site Testing
-        |
-        v
-Metrics + Predictions + Visualizations
+FWC = (woody vegetation area / total vegetation area) × 100
 ```
 
-## Repository Notes
+This provides a landscape-level estimate of woody vegetation coverage.
 
-- The project uses Jupyter notebooks to preserve the experimental workflow, model development, analysis, and results in an interactive format.
-- Datasets are organized under `data/datasets/`, while generated prediction outputs are stored separately under `data/predictions/`.
-- The `archive/experimental_or_duplicate/` directory contains alternate or experimental notebooks that are retained for reference but are not part of the primary workflow.
-- Generated artifacts such as `catboost_info/`, Jupyter checkpoint directories, and temporary files are excluded through `.gitignore`.
-- Model notebooks are organized by model family, while validation experiments are separated to make cross-validation and cross-site evaluation easier to navigate.
+In the 2021 JORN → 2021 SRER transfer experiment, the actual SRER fractional woody cover was approximately **55%**, while the non-tree models produced estimates of roughly **85–91%**.
+
+This was an important result: moderate observation-level classification accuracy did not necessarily translate into accurate landscape-level estimates.
+
+## Key Findings
+
+- Remote-sensing measurements contained useful information for distinguishing woody and non-woody vegetation, although the classes were not cleanly separable using individual features.
+- Several vegetation indices were highly correlated, motivating investigation of feature importance and redundancy.
+- Ensemble tree methods provided strong classification performance in several within-dataset comparisons.
+- Performance generally became more variable when models were transferred across different sites or years.
+- Same-site, cross-year experiments suggested that some learned relationships persisted over time, but temporal generalization differed between study sites.
+- Cross-site experiments demonstrated meaningful geographic distribution shift.
+- Strong performance under cross-validation within one dataset did not guarantee equivalent performance on a different site's data.
+- Moderate classification accuracy could still produce substantial errors in fractional woody cover because classification performance and landscape-level area estimation are different objectives.
+
+## Overall Conclusion
+
+The results suggest that remotely sensed vegetation characteristics provide a meaningful signal for woody/non-woody classification, but that this relationship is not completely stable across geographic locations and years.
+
+Rather than identifying a universally transferable classifier, the exploratory transfer experiments highlighted the importance of **external validation and distribution shift** when applying ecological machine-learning models beyond the environment in which they were trained.
+
+The fractional woody cover analysis further demonstrated that good observation-level classification performance alone is not sufficient to guarantee accurate ecological estimates. Future work could focus on improving cross-site calibration, investigating sources of distribution shift, incorporating additional environmental variables, and directly validating landscape-level woody-cover estimates.
+
+## Repository Structure
+
+The repository contains notebooks covering the major stages of the analysis:
+
+- **EDA** — exploration of vegetation features across JORN and SRER
+- **Feature Selection** — Boruta-based investigation of predictor importance
+- **Non-Tree Model Comparison** — Logistic Regression, LDA, QDA, and KNN with cross-validation
+- **Tree-Based Model Comparison** — Decision Trees and ensemble methods with cross-validation
+- **Cross-Dataset Transfer Experiments** — exploratory training/testing across sites and years
+- **JORN 2021 → SRER 2021 Validation** — focused geographic-transfer experiment
+- **Fractional Woody Cover** — conversion of classifications into landscape-level woody-cover estimates
+
 
 ## Contributors
 - Sophie Mao
